@@ -1,5 +1,8 @@
 #!/bin/python3
 
+from collections import deque
+from copy import deepcopy
+
 
 def word_ladder(start_word, end_word, dictionary_file='words5.dict'):
     '''
@@ -16,18 +19,46 @@ def word_ladder(start_word, end_word, dictionary_file='words5.dict'):
     ```
     may give the output
     ```
-    ['stone', 'shone', 'phone', 'phony', 'peony', 'penny', 'benny', 'bonny', 'boney', 'money']
+    ['stone', 'shone', 'phone', 'phony', 'peony', 'penny',
+    'benny', 'bonny', 'boney', 'money']
     ```
     but the possible outputs are not unique,
     so you may also get the output
     ```
-    ['stone', 'shone', 'shote', 'shots', 'soots', 'hoots', 'hooty', 'hooey', 'honey', 'money']
+    ['stone', 'shone', 'shote', 'shots', 'soots', 'hoots',
+    'hooty', 'hooey', 'honey', 'money']
     ```
     (We cannot use doctests here because the outputs are not unique.)
 
     Whenever it is impossible to generate a word ladder between the two words,
     the function returns `None`.
     '''
+    dic = open(dictionary_file)
+    words = dic.read().split('\n')
+
+    list = []
+    list.append(start_word)
+    queue = deque()
+    queue.append(list)
+
+    if start_word == end_word:
+        return list
+
+    while len(queue) != 0:
+        topstack = queue.pop()
+        copy = deepcopy(words)
+
+        for word in set(copy):
+            if _adjacent(word, topstack[-1]) is True:
+                stack_copied = deepcopy(topstack)
+                stack_copied.append(word)
+
+                if word == end_word:
+                    return stack_copied
+
+                queue.appendleft(stack_copied)
+                words.remove(word)
+    return None
 
 
 def verify_word_ladder(ladder):
@@ -40,6 +71,16 @@ def verify_word_ladder(ladder):
     >>> verify_word_ladder(['stone', 'shone', 'phony'])
     False
     '''
+    i = 0
+
+    if len(ladder) == 0:
+        return False
+    while i < len(ladder) - 1:
+        if _adjacent(ladder[i], ladder[i+1]) is True:
+            i += 1
+        else:
+            return False
+    return True
 
 
 def _adjacent(word1, word2):
@@ -52,3 +93,15 @@ def _adjacent(word1, word2):
     >>> _adjacent('stone','money')
     False
     '''
+    i = 0
+    if word1 == word2:
+        return False
+
+    if len(word1) == len(word2):
+        for a, b in zip(word1, word2):
+            if a != b:
+                i += 1
+    if i == 1:
+        return True
+    else:
+        return False
